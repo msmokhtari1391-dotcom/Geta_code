@@ -8,7 +8,7 @@ source.exclude_dirs = tests,bin,.git,.geta,__pycache__,DEV,projects,browser_prof
 
 version = 1.0.0
 
-requirements = python3,kivy==2.3.0,pyjnius,android,certifi,urllib3
+requirements = python3,kivy,pyjnius,android,certifi,urllib3
 
 icon.filename = %(source.dir)s/assets/icon.png
 presplash.filename = %(source.dir)s/assets/presplash.png
