@@ -18,7 +18,10 @@ from urllib.parse import parse_qs, urlparse
 import geta_code as core
 import cancel
 import devlog
-import power
+try:
+    import power  # کنترل بیدار ماندن صفحه (فقط ویندوز)
+except Exception:
+    power = None
 from checkpoint import Checkpoint
 from pipeline import Pipeline
 from workspace import Workspace
@@ -236,7 +239,7 @@ class AndroidApi:
     def _worker(self, task, name, roles, make_exe, auto_run, folder, mode, available, keep_awake=True):
         ok = False
         builder = None
-        if keep_awake:
+        if keep_awake and power is not None:
             power.keep_awake(True)
         try:
             if not folder:
@@ -259,7 +262,8 @@ class AndroidApi:
         finally:
             if builder is not None:
                 builder.close()
-            power.release()
+            if power is not None:
+                power.release()
             cancel.STOP.clear()
             with self._lock:
                 self._busy = False
@@ -334,11 +338,18 @@ def start_local_server(api: AndroidApi) -> int:
 if IS_ANDROID:
     class GetaAndroidApp(App):
         def build(self):
-            self.api = AndroidApi()
-            self.port = start_local_server(self.api)
-            Window.bind(on_keyboard=self._on_key)
-            Clock.schedule_once(lambda dt: self._mount_main_webview(), 0.2)
-            return Widget()
+            # اگه راه‌اندازی خطا بده، به جای صفحه‌ی سیاه، متن خطا نشون داده میشه
+            try:
+                self.api = AndroidApi()
+                self.port = start_local_server(self.api)
+                Window.bind(on_keyboard=self._on_key)
+                Clock.schedule_once(lambda dt: self._mount_main_webview(), 0.2)
+                return Widget()
+            except Exception:
+                import traceback
+                from kivy.uix.label import Label
+                return Label(text="خطا در راه‌اندازی Geta Code:\n" + traceback.format_exc()[-1500:],
+                             font_size="13sp", halign="left", valign="top", text_size=(Window.width - 40, None))
 
         def _on_key(self, window, key, *args):
             # دکمه Back اندروید (key == 27): اگر پنجره لاگین سرویس باز است، فقط آن را ببند

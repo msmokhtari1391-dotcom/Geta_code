@@ -1,28 +1,23 @@
-"""جلوگیری از خاموش شدن صفحه هنگام ساخت در اندروید و ویندوز."""
-_wake_lock = None
+"""جلوگیری از خاموش شدن صفحه و خواب ویندوز هنگام ساخت (فقط ویندوز)."""
+import os
+
+ES_CONTINUOUS = 0x80000000
+ES_SYSTEM_REQUIRED = 0x00000001
+ES_DISPLAY_REQUIRED = 0x00000002
+
 
 def keep_awake(on=True):
-    global _wake_lock
+    """باید در همون thread کاری صدا زده بشه؛ Windows این وضعیت رو برای thread فعلی نگه می‌داره."""
+    if os.name != "nt":
+        return False
     try:
-        from jnius import autoclass
-        PythonActivity = autoclass("org.kivy.android.PythonActivity")
-        Context = autoclass("android.content.Context")
-        PowerManager = autoclass("android.os.PowerManager")
-        activity = PythonActivity.mActivity
-        if activity is None:
-            return False
-        if on:
-            if _wake_lock is None:
-                pm = activity.getSystemService(Context.POWER_SERVICE)
-                _wake_lock = pm.newWakeLock(PowerManager.SCREEN_BRIGHT_WAKE_LOCK | PowerManager.ON_AFTER_RELEASE, "GetaCode::BuildLock")
-            if not _wake_lock.isHeld():
-                _wake_lock.acquire()
-        else:
-            if _wake_lock is not None and _wake_lock.isHeld():
-                _wake_lock.release()
+        import ctypes
+        flags = ES_CONTINUOUS | ((ES_SYSTEM_REQUIRED | ES_DISPLAY_REQUIRED) if on else 0)
+        ctypes.windll.kernel32.SetThreadExecutionState(flags)
         return True
     except Exception:
         return False
+
 
 def release():
     keep_awake(False)
