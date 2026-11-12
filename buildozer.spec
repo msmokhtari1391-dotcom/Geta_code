@@ -1,35 +1,39 @@
 [app]
+
+# ---- اطلاعات برنامه ----
 title = Geta Code
 package.name = getacode
-package.domain = org.geta
+package.domain = org.getacode
 source.dir = .
-source.include_exts = py,png,jpg,kv,atlas,html,css,js,json,webp,txt
-source.exclude_dirs = tests,bin,.git,.geta,__pycache__,DEV,projects,browser_profiles
-
+source.include_exts = py,png,jpg,html,json,txt
+source.exclude_dirs = .github,.buildozer,bin,tests,__pycache__,venv,debug,projects,browser_profiles
+source.exclude_patterns = *.zip,*.html.bak
 version = 1.0.0
 
-requirements = python3,kivy,pyjnius,android,certifi,urllib3
+# ---- وابستگی‌ها ----
+# فقط پکیج‌های واقعی. «android» پکیج pip نیست و حذف شده.
+requirements = python3,kivy==2.3.0,pyjnius,certifi
 
-icon.filename = %(source.dir)s/assets/icon.png
-presplash.filename = %(source.dir)s/assets/presplash.png
-presplash.color = #0a0405
-
-# قفل صفحه روی حالت افقی (Landscape) و تمام‌صفحه
+# ---- نمایش ----
 orientation = landscape
-fullscreen = 1
+fullscreen = 0
+presplash.filename = %(source.dir)s/assets/presplash.png
+android.presplash_color = #0a0a14
 
-android.permissions = INTERNET,ACCESS_NETWORK_STATE,WAKE_LOCK,WRITE_EXTERNAL_STORAGE,READ_EXTERNAL_STORAGE
+# ---- اندروید ----
+android.permissions = INTERNET,ACCESS_NETWORK_STATE,WAKE_LOCK
 android.api = 33
 android.minapi = 24
 android.ndk = 25b
 android.archs = arm64-v8a
 android.allow_backup = True
 android.accept_sdk_license = True
+android.logcat_filters = *:S python:D
 
-# جلوگیری از بهم ریختن چیدمان با باز شدن کیبورد گوشی
-android.manifest.application_attrs = android:usesCleartextTraffic="true"
-android.manifest.activity_attrs = android:screenOrientation="sensorLandscape" android:windowSoftInputMode="adjustPan" android:configChanges="orientation|screenSize|screenLayout|keyboardHidden"
+# ---- نسخه‌ی python-for-android ----
+# برای جلوگیری از خطای pyjnius==1.7.0 و python 3.14 یک شاخه‌ی پایدار قفل شده
+p4a.branch = v2024.01.21
 
 [buildozer]
 log_level = 2
-warn_on_root = 0
+warn_on_root = 1
